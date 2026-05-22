@@ -1,0 +1,28 @@
+# ==========================================
+# DATOS 
+data/
+*.csv
+*.txt
+*.xlsx
+*.json
+
+# ENTORNO VIRTUAL
+
+.venv/
+venv/
+env/
+ENV/
+
+# CACHÉ DE PYTHON Y NOTEBOOKS
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/     #Con esto evito que se crée esta carpeta oculta constantemente y ensucie mucho el Git
+
+# CONFIGURACIONES DE VS CODE / SISTEMA
+
+.vscode/
+.DS_Store               # Así no se guarda ni se actualiza este archivo oculto que crea el sistema si comparto con Mac
+Thumbs.db               # Como tengo windows así evito este archivo oculto de miniaturas de Windows jeje
