@@ -1,76 +1,113 @@
-# main.py
-import os
-import sys
+from src.cleaning import DataCleaner
+from src.features import FeatureEngineer
+from src.viz import Visualizer
+
 import pandas as pd
+from pathlib import Path
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(BASE_DIR)
 
-from src.cleaning import limpieza_datos
-from src.features import construccion_caracteristicas_de_satelites
-from src.viz import satelite_distribucion_graf, exentricidad_orbita_graf, plot_geopolitica, proyeccion_tiempo_graf
+class SpaceDebrisPipeline:
+    """
+    End-to-end pipeline for Space Debris analysis.
+    Orchestrates loading, cleaning, feature engineering, EDA, and export.
+    """
 
-class PipelineAnalisisSatelites:
-    def __init__(self, nombre_archivo='ucs_satellites.txt', es_crudo=True):
-        subcarpeta = 'raw' if es_crudo else 'processed'
-        self.ruta_origen = os.path.join(BASE_DIR, 'data', subcarpeta, nombre_archivo)
-        self.carpeta_destino = os.path.join(BASE_DIR, 'data', 'processed')
-        self.df = None
-        os.makedirs(self.carpeta_destino, exist_ok=True)
+    def __init__(self, raw_path, output_path):
+        self.raw_path = Path(raw_path)
+        self.output_path = Path(output_path)
 
-    def ejecutar_pipeline(self):
-        print("=" * 60)
-        print("🚀 INICIANDO PIPELINE DE DATOS (ARQUITECTURA CLASE POO)")
-        print("=" * 60)
-        
-        try:
-            if not os.path.exists(self.ruta_origen):
-                raise FileNotFoundError(f"No se encontró el archivo en: {self.ruta_origen}")
-            
-            print(f"[INFO] Cargando registros desde: {self.ruta_origen}")
-            
-            # Carga directa y segura usando latin-1 y tabulador que dio éxito en tu consola
-            self.df = pd.read_csv(self.ruta_origen, sep='\t', on_bad_lines='skip', low_memory=False, encoding='latin-1')
-                
-            print(f"[ÉXITO] Datos base cargados. Dimensiones crudas: {self.df.shape}")
-            
-            # 2. LIMPIEZA PROFUNDA (Aquí reduce automáticamente a tus 35 columnas)
-            print("[INFO] Ejecutando módulo de limpieza y reducción a 35 columnas...")
-            self.df = limpieza_datos(self.df)
-            print(f"[ÉXITO] Estructura limpia alineada al Notebook. Dimensiones: {self.df.shape}")
-            
-            # 3. INGENIERÍA DE CARACTERÍSTICAS
-            print("[INFO] Construyendo variables derivadas...")
-            self.df = construccion_caracteristicas_de_satelites(self.df)
-            
-            # 4. EXPORTACIÓN DE RESULTADOS
-            archivo_salida = os.path.join(self.carpeta_destino, 'demo_clean_features.csv')
-            self.df.to_csv(archivo_salida, index=False, encoding='utf-8')
-            print(f"[ÉXITO] Dataset exportado a: {archivo_salida}")
-            
-            # 5. GENERACIÓN Y GUARDADO DE GRÁFICOS
-            print("[INFO] Renderizando laboratorio gráfico analítico y predictivo...")
-            
-            fig1 = satelite_distribucion_graf(self.df)
-            fig1.savefig(os.path.join(self.carpeta_destino, '01_distribucion_orbitas.png'))
-            
-            fig2 = exentricidad_orbita_graf(self.df)
-            fig2.savefig(os.path.join(self.carpeta_destino, '02_analisis_excentricidad.png'))
-            
-            fig3 = plot_geopolitica(self.df)
-            fig3.savefig(os.path.join(self.carpeta_destino, '03_geopolitica_espacial.png'))
-            
-            fig4 = proyeccion_tiempo_graf(self.df)
-            fig4.savefig(os.path.join(self.carpeta_destino, '04_proyeccion_tendencias.png'))
-            
-            print(f"[ÉXITO] Todos los gráficos se guardaron en: {self.carpeta_destino}")
-            print("\n" + "=" * 60)
-            print("🎯 ¡EJECUCIÓN DEL PIPELINE FINALIZADA CON ÉXITO!")
-            print("=" * 60)
-            
-        except Exception as e:
-            print(f"\n❌ [ERROR CRÍTICO CONTROLADO]: {str(e)}")
+        self.data = None
+        self.clean_data = None
+        self.feature_data = None
 
-if __name__ == '__main__':
-    pipeline = PipelineAnalisisSatelites(nombre_archivo='ucs_satellites.txt', es_crudo=True)
-    pipeline.ejecutar_pipeline()
+        # Components
+        self.cleaner = DataCleaner()
+        self.engineer = FeatureEngineer()
+        self.viz = Visualizer()
+
+        self.output_path.mkdir(parents=True, exist_ok=True)
+
+    # -------------------------
+    # 1. LOAD DATA
+    # -------------------------
+    def load_data(self):
+        print("[1/5] Loading raw dataset...")
+
+        self.data = pd.read_csv(
+            self.raw_path,
+            sep=None,
+            engine="python",
+            encoding="latin1"
+        )
+
+        print(f"✔ Data loaded: {self.data.shape}")
+        return self
+
+    # -------------------------
+    # 2. CLEANING
+    # -------------------------
+    def clean(self):
+        print("[2/5] Cleaning dataset...")
+
+        self.clean_data = self.cleaner.clean(self.data)
+
+        print(f"✔ Clean data: {self.clean_data.shape}")
+        return self
+
+    # -------------------------
+    # 3. FEATURE ENGINEERING
+    # -------------------------
+    def feature_engineering(self):
+        print("[3/5] Engineering features...")
+
+        self.feature_data = self.engineer.transform(self.clean_data)
+
+        print(f"✔ Features created: {self.feature_data.shape}")
+        return self
+
+    # -------------------------
+    # 4. ANALYSIS / VISUALIZATION
+    # -------------------------
+    def run_eda(self):
+        print("[4/5] Running EDA and visualizations...")
+
+        self.viz.plot_distributions(self.feature_data)
+        self.viz.plot_trends(self.feature_data)
+        self.viz.plot_geopolitical_analysis(self.feature_data)
+
+        print("✔ Visualizations generated")
+        return self
+
+    # -------------------------
+    # 5. EXPORT RESULTS
+    # -------------------------
+    def export(self):
+        print("[5/5] Exporting outputs...")
+
+        self.feature_data.to_csv(
+            self.output_path / "satellites_processed.csv",
+            index=False
+        )
+
+        print(f"✔ Exported to {self.output_path}")
+        return self
+
+    # -------------------------
+    # RUN ALL
+    # -------------------------
+    def run(self):
+        return (
+            self.load_data()
+                .clean()
+                .feature_engineering()
+                .run_eda()
+                .export()
+        )
+
+
+if __name__ == "__main__":
+    RAW_PATH = "data/raw/ucs_satellites.txt"
+    OUTPUT_PATH = "data/processed"
+
+    pipeline = SpaceDebrisPipeline(RAW_PATH, OUTPUT_PATH)
+    pipeline.run()

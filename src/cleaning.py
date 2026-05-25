@@ -1,52 +1,61 @@
-# src/cleaning.py
 import pandas as pd
 
-def limpieza_datos(df):
-    # 1. Definimos las 35 columnas exactas que tú seleccionaste en tu Notebook
-    columnas_reducidas = [
-        'Current Official Name of Satellite', 'Country/Org of UN Registry', 
-        'Country of Operator/Owner', 'Operator/Owner', 'Users', 'Purpose', 
-        'Detailed Purpose', 'Class of Orbit', 'Type of Orbit', 'Longitude of GEO (degrees)', 
-        'Perigee (km)', 'Apogee (km)', 'Eccentricity', 'Inclination (degrees)', 
-        'Period (minutes)', 'Launch Mass (kg.)', 'Dry Mass (kg.)', 'Power (watts)', 
-        'Date of Launch', 'Expected Lifetime (yrs.)', 'Contractor', 'Country of Contractor', 
-        'Launch Site', 'Launch Vehicle', 'COSPAR Number', 'NORAD Number', 'Comments', 
-        'Source Used for Orbital Data', 'Source', 'Source.1', 'Source.2', 'Source.3', 
-        'Source.4', 'Source.5', 'Source.6'
-    ]
-    
-    # Nos aseguramos de limpiar espacios ocultos en los nombres de columnas que vienen del TXT
-    df.columns = df.columns.str.strip()
-    
-    # Filtramos el DataFrame para quedarnos únicamente con tus 35 columnas
-    # Si alguna columna por error del TXT no se encuentra, la ignoramos de forma segura
-    columnas_presentes = [col for col in columnas_reducidas if col in df.columns]
-    df_limpieza = df[columnas_presentes].copy()
-    
-    # 2. Tu bloque de conversión numérica exacto
-    columnas_numericas_a_tratar = [
-        'Perigee (km)', 'Apogee (km)', 'Eccentricity', 
-        'Inclination (degrees)', 'Launch Mass (kg.)',
-        'Period (minutes)', 'Dry Mass (kg.)', 'Power (watts)'
-    ]
-    
-    for columnas in columnas_numericas_a_tratar:
-        if columnas in df_limpieza.columns:
-            cambio_comas = df_limpieza[columnas].astype(str).str.replace(',', '', regex=False).str.strip()
-            df_limpieza[columnas] = pd.to_numeric(cambio_comas, errors='coerce')
 
-    # 3. Tus conversiones de fechas e identificadores
-    if 'Date of Launch' in df_limpieza.columns:
-        df_limpieza['Date of Launch'] = pd.to_datetime(df_limpieza['Date of Launch'], errors='coerce')
+class DataCleaner:
+    """
+    Clase encargada de limpieza de datos del dataset UCS Satellites.
+    """
+
+    def __init__(self):
+        pass
+
+    def clean(self, df: pd.DataFrame) -> pd.DataFrame:
         
-    if 'NORAD Number' in df_limpieza.columns:
-        df_limpieza['NORAD Number'] = df_limpieza['NORAD Number'].astype(str)
+        df = df.copy()
+
+        # 1. Normalizar nombres de columnas
+        df.columns = df.columns.str.strip()
+
+        # 2. Limpieza de strings con comas (ej: "1,000")
+        object_cols = df.select_dtypes(include="object").columns
+
+        for col in object_cols:
+            df[col] = df[col].astype(str).str.replace(",", "", regex=False)
+
+        # 3. Intentar conversión a numérico cuando sea posible
+        for col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
+        # 4. Eliminar duplicados
+        df = df.drop_duplicates()
+
+        # -----------------------------
+        # FORZAR TIPOS NUMÉRICOS CLAVE
+        # -----------------------------
+
+        numeric_columns = [
+            "Launch Mass (kg.)",
+            "Apogee (km)",
+            "Perigee (km)"
+        ]
+
+        for col in numeric_columns:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors="coerce")
+        # asegurar consistencia en fechas si existen
+        date_cols = [col for col in df.columns if "date" in col.lower()]
+
+        for col in date_cols:
+            df[col] = pd.to_datetime(df[col], errors="coerce")
         
-    if 'COSPAR Number' in df_limpieza.columns:
-        df_limpieza['COSPAR Number'] = df_limpieza['COSPAR Number'].astype(str)
+        df["Country of Operator/Owner"] = (
+            df["Country of Operator/Owner"]
+            .astype(str)
+            .str.strip()
+            .replace("nan", pd.NA)
+        )
         
-    # Ordenamos cronológicamente si existe la fecha
-    if 'Date of Launch' in df_limpieza.columns:
-        df_limpieza = df_limpieza.sort_values(by='Date of Launch', ascending=True)
         
-    return df_limpieza
+        
+        
+        return df
