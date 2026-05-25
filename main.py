@@ -7,10 +7,6 @@ from pathlib import Path
 
 
 class SpaceDebrisPipeline:
-    """
-    End-to-end pipeline for Space Debris analysis.
-    Orchestrates loading, cleaning, feature engineering, EDA, and export.
-    """
 
     def __init__(self, raw_path, output_path):
         self.raw_path = Path(raw_path)
@@ -20,16 +16,12 @@ class SpaceDebrisPipeline:
         self.clean_data = None
         self.feature_data = None
 
-        # Components
         self.cleaner = DataCleaner()
         self.engineer = FeatureEngineer()
         self.viz = Visualizer()
 
         self.output_path.mkdir(parents=True, exist_ok=True)
 
-    # -------------------------
-    # 1. LOAD DATA
-    # -------------------------
     def load_data(self):
         print("[1/5] Loading raw dataset...")
 
@@ -43,9 +35,6 @@ class SpaceDebrisPipeline:
         print(f"✔ Data loaded: {self.data.shape}")
         return self
 
-    # -------------------------
-    # 2. CLEANING
-    # -------------------------
     def clean(self):
         print("[2/5] Cleaning dataset...")
 
@@ -54,9 +43,6 @@ class SpaceDebrisPipeline:
         print(f"✔ Clean data: {self.clean_data.shape}")
         return self
 
-    # -------------------------
-    # 3. FEATURE ENGINEERING
-    # -------------------------
     def feature_engineering(self):
         print("[3/5] Engineering features...")
 
@@ -65,9 +51,6 @@ class SpaceDebrisPipeline:
         print(f"✔ Features created: {self.feature_data.shape}")
         return self
 
-    # -------------------------
-    # 4. ANALYSIS / VISUALIZATION
-    # -------------------------
     def run_eda(self):
         print("[4/5] Running EDA and visualizations...")
 
@@ -78,9 +61,6 @@ class SpaceDebrisPipeline:
         print("✔ Visualizations generated")
         return self
 
-    # -------------------------
-    # 5. EXPORT RESULTS
-    # -------------------------
     def export(self):
         print("[5/5] Exporting outputs...")
 
@@ -92,9 +72,6 @@ class SpaceDebrisPipeline:
         print(f"✔ Exported to {self.output_path}")
         return self
 
-    # -------------------------
-    # RUN ALL
-    # -------------------------
     def run(self):
         return (
             self.load_data()

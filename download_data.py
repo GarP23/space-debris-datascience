@@ -3,7 +3,6 @@ import requests
 from tqdm import tqdm
 
 def descargar_dataset_ucs():
-    # Limpiar pantalla para que quede chulo
     os.system('cls' if os.name == 'nt' else 'clear')
     
     print("="*60)
@@ -13,7 +12,6 @@ def descargar_dataset_ucs():
     ruta_raw = os.path.join('data', 'raw')
     os.makedirs(ruta_raw, exist_ok=True)
     
-    # ¡Tu súper URL directa del archivo de texto!
     url = "https://www.ucsusa.org/sites/default/files/2024-01/UCS-Satellite-Database-Officialname%205-1-2023%20%28text%29.txt"
     destino = os.path.join(ruta_raw, "ucs_satellites.txt")
     

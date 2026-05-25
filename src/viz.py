@@ -3,17 +3,11 @@ import seaborn as sns
 
 
 class Visualizer:
-    """
-    Clase encargada de visualizaciones del dataset de satélites.
-    """
 
     def __init__(self):
         pass
 
     def plot_distributions(self, df):
-        """
-        Distribuciones básicas de variables numéricas.
-        """
         numeric_cols = df.select_dtypes(include="number").columns
 
         for col in numeric_cols[:5]:  # limitamos para no saturar
@@ -24,9 +18,7 @@ class Visualizer:
             plt.close()
 
     def plot_trends(self, df):
-        """
-        Tendencias temporales si existe launch_year.
-        """
+
         if "launch_year" in df.columns:
             plt.figure()
             df["launch_year"].value_counts().sort_index().plot(kind="line")
@@ -37,9 +29,7 @@ class Visualizer:
             plt.close()
 
     def plot_geopolitical_analysis(self, df):
-        """
-        Análisis por país si existe columna.
-        """
+
         if "Country of Operator/Owner" in df.columns:
             plt.figure()
             top_countries = df["Country of Operator/Owner"].dropna().value_counts().head()

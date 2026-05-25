@@ -130,6 +130,16 @@ Algunos resultados relevantes del análisis incluyen:
 
 ---
 
+## Conclusiones
+
+El desarrollo e implementación de este proyecto modular permite extraer tres conclusiones fundamentales, tanto desde la perspectiva de la Ciencia de Datos como del dominio de la infraestructura aeroespacial:
+
+1. **Eficacia del Enfoque Modular y Automatizado:** La separación del código en módulos especializados (`cleaning`, `features`, `viz`) integrados en un único pipeline (`main.py`) demuestra que es posible transformar datos crudos, inconsistentes y de fuentes no estructuradas en un activo de datos reproducible y de alta fidelidad. Esto sienta las bases para escalar el proyecto hacia modelos predictivos o sistemas de alerta en tiempo real sin necesidad de reescribir la lógica base.
+
+2. **Validación Cuantitativa del Riesgo de Saturación Orbital:** Los hallazgos del EDA confirman de manera empírica que el paradigma del *New Space* ha alterado drásticamente la dinámica orbital. La concentración masiva de más de 6,500 objetos en la región LEO, sumada a la tasa exponencial de lanzamientos comerciales (superando los 2,000 anuales), valida estadísticamente la urgencia de regular el tráfico espacial para mitigar el Síndrome de Kessler.
+
+3. **Importancia del Diagnóstico de Calidad de Datos (Data Profiling):** El descubrimiento de anomalías temporales (como registros desplazados al año 2074) e inconsistencias de registro de texto (`LEO` vs `Geo`) subraya que en proyectos aeroespaciales, la ingeniería de características y la limpieza exhaustiva representan el 80% del éxito del análisis. El pipeline desarrollado mitiga con éxito el sesgo que estos valores atípicos habrían introducido en cualquier modelo analítico posterior.
+
 ## Cómo Ejecutar el Proyecto
 
 Instalar dependencias:
@@ -155,3 +165,4 @@ Algunas extensiones futuras del proyecto podrían incluir:
 * dashboards interactivos,
 * visualizaciones geoespaciales orbitales,
 * generación automática de reportes.
+
